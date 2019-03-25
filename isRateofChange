@@ -1,0 +1,47 @@
+##########################################################################################
+isRateofChange = function(x = x, y = y, noiseLevs = noiseLevs, special.Vars = special.Vars, iteration = iteration)
+{
+  noiseNames = matrix(data = NA, nrow = 1, ncol = dim(x)[2])
+  VifRateOfChangeMat = matrix(NA, dim(x)[2], dim(x)[2])
+  tolRateOfChangeMat = matrix(NA, dim(x)[2], dim(x)[2])
+  wiRateOfChangeMat = matrix(NA, dim(x)[2], dim(x)[2])
+  fiRateOfChangeMat = matrix(NA, dim(x)[2], dim(x)[2])
+  leamerRateOfChangeMat = matrix(NA, dim(x)[2], dim(x)[2])
+  cVifRateOfChangeMat = matrix(NA, dim(x)[2], dim(x)[2])
+  
+  row.names(VifRateOfChangeMat) = colnames(x)
+  row.names(tolRateOfChangeMat) = colnames(x)
+  row.names(wiRateOfChangeMat) = colnames(x)
+  row.names(fiRateOfChangeMat) = colnames(x)
+  row.names(leamerRateOfChangeMat) = colnames(x)
+  row.names(cVifRateOfChangeMat) = colnames(x)
+  
+  for(i in 1:dim(x)[2])
+  {
+    noiseNames[,i] = paste(colnames(x[i]),"noise")
+  }
+  
+  colnames(VifRateOfChangeMat) = as.vector(noiseNames)
+  colnames(tolRateOfChangeMat) = colnames(VifRateOfChangeMat)
+  colnames(wiRateOfChangeMat) = colnames(VifRateOfChangeMat)
+  colnames(fiRateOfChangeMat) = colnames(VifRateOfChangeMat)
+  colnames(leamerRateOfChangeMat) = colnames(VifRateOfChangeMat)
+  colnames(cVifRateOfChangeMat) = colnames(VifRateOfChangeMat)
+  
+  
+  for(i in 1:dim(x)[2])
+  {
+    special.Vars = colnames(x)[i]
+    summaryTableList = rateOfChange(x = x, y = y, noiseLevs = noiseLevs, special.Vars = special.Vars, iteration = iteration)
+    
+    VifRateOfChangeMat[,i] = summaryTableList[[4]][[4]]
+    tolRateOfChangeMat[,i] = summaryTableList[[5]][[4]]
+    wiRateOfChangeMat[,i] = summaryTableList[[6]][[4]]
+    fiRateOfChangeMat[,i] = summaryTableList[[7]][[4]]
+    leamerRateOfChangeMat[,i] = summaryTableList[[8]][[4]]
+    cVifRateOfChangeMat[,i] = summaryTableList[[9]][[4]]
+  }
+  
+  return(list(VifRateOfChangeMat, tolRateOfChangeMat, wiRateOfChangeMat, fiRateOfChangeMat, leamerRateOfChangeMat, cVifRateOfChangeMat))
+}
+##########################################################################################
