@@ -1,0 +1,79 @@
+#########################################################################################
+overallDiagsOut = function(x = x, y = y, noiseLevs = noiseLevs, iteration = iteration)
+{
+  detMat = matrix(NA, iteration, length(noiseLevs))
+  chiSqrMat = matrix(NA, iteration, length(noiseLevs))
+  redIndMat = matrix(NA, iteration, length(noiseLevs))
+  sumOfLamMat = matrix(NA, iteration, length(noiseLevs))
+  theilIndMat = matrix(NA, iteration, length(noiseLevs))
+  conditionMat = matrix(NA, iteration, length(noiseLevs))
+  
+  detoutputMat = matrix(NA, 7, 4)
+  chioutputMat = matrix(NA, 7, 4)
+  redoutputMat = matrix(NA, 7, 4)
+  sumoutputMat = matrix(NA, 7, 4)
+  theiloutputMat = matrix(NA, 7, 4)
+  conditionoutputMat = matrix(NA, 7, 4)
+
+  outputList = list()
+  
+  summaryList = noiseLevelDiagOutList(x,y,special.Vars, noiseLevs, iteration)
+  for(k in 1:dim(x)[2])
+  {
+    special.Vars = colnames(x)[k]
+    detoutputMat[k,1] = special.Vars 
+    chioutputMat[k,1] = special.Vars 
+    redoutputMat[k,1] = special.Vars 
+    sumoutputMat[k,1] = special.Vars 
+    theiloutputMat[k,1] = special.Vars 
+    conditionoutputMat[k,1] = special.Vars
+    
+    summaryList = noiseLevelDiagOutList(x,y,special.Vars, noiseLevs, iteration)
+    
+    origDet = summaryList[[1]][[2]][1]
+    origChiSqr = summaryList[[1]][[2]][2]
+    origRedInd = summaryList[[1]][[2]][3]
+    origSumofLam = summaryList[[1]][[2]][4]
+    origTheilInd = summaryList[[1]][[2]][5]
+    origCondNum = summaryList[[1]][[2]][6]
+    
+    for(j in 2:length(summaryList))
+    {
+      for(i in 1:iteration)
+      {
+        detMat[i,(j-1)] = summaryList[[j]][[i]][[2]][1]
+        chiSqrMat[i,(j-1)] = summaryList[[j]][[i]][[2]][2]
+        redIndMat[i,(j-1)] = summaryList[[j]][[i]][[2]][3]
+        sumOfLamMat[i,(j-1)] = summaryList[[j]][[i]][[2]][4]
+        theilIndMat[i,(j-1)] = summaryList[[j]][[i]][[2]][5]
+        conditionMat[i,(j-1)] = summaryList[[j]][[i]][[2]][6]
+        
+      }
+    }   
+    detoutputMat[k,2] = min(apply(detMat, 2, mean), origDet)
+    detoutputMat[k,3] = max(apply(detMat, 2, mean), origDet)
+    detoutputMat[k,4] = max(apply(detMat, 2, mean), origDet)-min(apply(detMat, 2, mean), origDet)
+
+    chioutputMat[k,2] = min(apply(chiSqrMat, 2, mean), origChiSqr)
+    chioutputMat[k,3] = max(apply(chiSqrMat, 2, mean), origChiSqr)
+    chioutputMat[k,4] = max(apply(chiSqrMat, 2, mean), origChiSqr)-min(apply(chiSqrMat, 2, mean), origChiSqr)
+    
+    redoutputMat[k,2] = min(apply(redIndMat, 2, mean), origRedInd)
+    redoutputMat[k,3] = max(apply(redIndMat, 2, mean), origRedInd)
+    redoutputMat[k,4] = max(apply(redIndMat, 2, mean), origRedInd)-min(apply(redIndMat, 2, mean), origRedInd)
+    
+    sumoutputMat[k,2] = min(apply(sumOfLamMat, 2, mean), origSumofLam)
+    sumoutputMat[k,3] = max(apply(sumOfLamMat, 2, mean), origSumofLam)
+    sumoutputMat[k,4] = max(apply(sumOfLamMat, 2, mean), origSumofLam)-min(apply(sumOfLamMat, 2, mean), origSumofLam)
+    
+    theiloutputMat[k,2] = min(apply(theilIndMat, 2, mean), origTheilInd)
+    theiloutputMat[k,3] = max(apply(theilIndMat, 2, mean), origTheilInd)
+    theiloutputMat[k,4] = max(apply(theilIndMat, 2, mean), origTheilInd)-min(apply(theilIndMat, 2, mean), origTheilInd)
+    
+    conditionoutputMat[k,2] = min(apply(conditionMat, 2, mean), origCondNum)
+    conditionoutputMat[k,3] = max(apply(conditionMat, 2, mean), origCondNum)
+    conditionoutputMat[k,4] = max(apply(conditionMat, 2, mean), origCondNum)-min(apply(conditionMat, 2, mean), origCondNum) 
+    }
+   ouputlist = list(detoutputMat, chioutputMat, redoutputMat, sumoutputMat, theiloutputMat, conditionoutputMat)  
+}
+#########################################################################################
