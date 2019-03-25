@@ -1,0 +1,30 @@
+#########################################################################################
+overallDiagsRank = function(xmat = x, resp = y, noiseL = noiseLevs, itera = iteration)
+{
+  diffMat = matrix(NA, nrow = dim(xmat)[2], ncol = 7)
+  rankDiffMat = matrix(NA, nrow = dim(xmat)[2], ncol = 7)
+  formatDiffMat = matrix(NA, nrow = dim(xmat)[2], ncol = 7)
+  
+  for(i in 1:dim(xmat)[2])
+  {
+    special.Vars = colnames(xmat)[i]
+    diffMat[i,1] = special.Vars 
+    diffMat[i,2:7] = overallDiagsDiffs(xmat, resp, special.Vars, noiseL, itera)[[1]]
+  }
+  
+  formatDiffMat[,1] = diffMat[,1]
+  formatDiffMat[,2:dim(xmat)[2]] = formatC(diffMat[,2:dim(xmat)[2]],format = "e", digits = 3)
+  absolutValDiff = abs(apply(diffMat[,2:7], 2, function(x)(as.numeric(x))))
+  absMat = apply(absolutValDiff,2,function(x)(rank(-x)))
+  sumMat = apply(absMat, 1, function(x)(sum(x)))
+  overallRank = rank(sumMat)
+  rankDiffMat = cbind(diffMat[,1],absMat,sumMat, overallRank)
+  
+  colnames(diffMat) = c("Noise variable", "detDiff", "chiSqrDiff", "redIndDiff", 
+                        "sumOfLamDiff", "theilIndDiff", "conditionDiff")
+  colnames(formatDiffMat) = colnames(diffMat)
+  colnames(rankDiffMat) = c(colnames(diffMat), "Rank Sum", "Overall Rank")
+  
+  return(rankDiffMat)
+}
+#########################################################################################
