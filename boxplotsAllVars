@@ -1,0 +1,44 @@
+##########################################################################################
+boxplotsAllVars = function(xmatrix = x, y = resp, noiseLevs = noiseLevels, special.Vars = special.Vars, iteration = iterations, path = NULL)
+{ # Diagout function call 
+  summaryresults = diagout(xmatrix, y, noiseLevs, special.Vars, iteration)
+  diagnames = names(summaryresults)
+  
+  if(is.null(path)) 
+  {
+    path = getwd()
+  }
+  newDir = "Boxplots"
+  if(file.exists(newDir))
+  {
+    setwd(file.path(path, newDir))
+  }
+  else
+  {
+    dir.create(file.path(path, newDir))
+    setwd(file.path(path, newDir))
+  }
+  # This loops through summary results 
+  for(j in 1:length(summaryresults))
+  { # Should go j = 10 diagnostic loops 
+    
+    # Opening up a pdf doc 
+    pdf(paste(as.character(diagnames[j]),"pdf", sep = "."), onefile=T, width = 17)
+    par(mfrow = c(2,2), pty = "m")
+    
+    # This loop makes box plots for all variable measuring one diagnostics at one noise level
+    for(i in 1:length(noiseLevs))
+    { # Should go i = 10 noiseLevel loops 
+      boxplot(summaryresults[[j]][[i]], 
+              main = paste("Boxplots of all variables", paste(diagnames[j]), "noise variable:", 
+                           paste(special.Vars),"@", paste(noiseLevs[i]*100), "% * sd"),
+              xlab = paste("Variables"), ylab = paste(diagnames[j]), names = names(xmatrix))
+      # Need to add ylim ex: ylim = c(-0.5, 1)
+    }
+    dev.off()
+  }
+  outputPath = paste("Your Boxplots are in ", paste(getwd()), "directory") 
+  setwd(file.path(path))
+  return(print(outputPath))
+}
+##########################################################################################
