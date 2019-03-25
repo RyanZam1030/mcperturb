@@ -1,0 +1,29 @@
+#########################################################################################
+noiseLevelDiagOutList = function(x = C(), y = c(), special.Vars = c(), noiseLevels = c(), iter = c(1))
+{
+  diagOutList = list()
+  
+  # Calculates the original diagnostics 
+  origDiagList = list(regModelStats(x, y), omcdiag(x, y)$odiags, imcdiag(x, y)$idiags)
+  
+  # Initializing a list of all noise Levels
+  listAllNoiseLevels = list(origDiagList) 
+  # Initializing a list
+  listAllNoiseLevelsNames = list(c("Level 0"))
+  
+  # Loop of different noise levels
+  for(j in 1:length(noiseLevels))  
+  { 
+    for(i in 1:iter)
+    {
+      diagOutList[[i]] = list(regModelStats(randomNoiseMat(x, special.Vars, noiseLevels), y),
+                              omcdiag(randomNoiseMat(x, special.Vars, noiseLevels), y)$odiags,
+                              imcdiag(randomNoiseMat(x, special.Vars, noiseLevels), y)$idiags)
+    }
+    listAllNoiseLevels[[(j+1)]] =  diagOutList
+    listAllNoiseLevelsNames[(j+1)]  = c(paste("Level",j))
+  }
+  # Returns a list of different noise levels, with multiple iterations 
+  return(structure(listAllNoiseLevels, names = listAllNoiseLevelsNames))
+}
+#########################################################################################
