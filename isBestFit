@@ -1,0 +1,46 @@
+################################################################################
+isBestFit = function(x = x, y = y, noiseLevs = noiseLevs, special.Vars = special.Vars, iteration = iteration)
+{
+  noiseNames = matrix(data = NA, nrow = 1, ncol = dim(x)[2])
+  VifLeastSqrsMat = matrix(NA, dim(x)[2], dim(x)[2])
+  tolLeastSqrsMat = matrix(NA, dim(x)[2], dim(x)[2])
+  wiLeastSqrsMat = matrix(NA, dim(x)[2], dim(x)[2])
+  fiLeastSqrsMat = matrix(NA, dim(x)[2], dim(x)[2])
+  leamerLeastSqrsMat = matrix(NA, dim(x)[2], dim(x)[2])
+  cVifLeastSqrsMat = matrix(NA, dim(x)[2], dim(x)[2])
+  
+  row.names(VifLeastSqrsMat) = colnames(x)
+  row.names(tolLeastSqrsMat) = colnames(x)
+  row.names(wiLeastSqrsMat) = colnames(x)
+  row.names(fiLeastSqrsMat) = colnames(x)
+  row.names(leamerLeastSqrsMat) = colnames(x)
+  row.names(cVifLeastSqrsMat) = colnames(x)
+  
+  for(i in 1:dim(x)[2])
+  {
+    noiseNames[,i] = paste(colnames(x[i]),"noise")
+  }
+  
+  colnames(VifLeastSqrsMat) = as.vector(noiseNames)
+  colnames(tolLeastSqrsMat) = colnames(VifLeastSqrsMat)
+  colnames(wiLeastSqrsMat) = colnames(VifLeastSqrsMat)
+  colnames(fiLeastSqrsMat) = colnames(VifLeastSqrsMat)
+  colnames(leamerLeastSqrsMat) = colnames(VifLeastSqrsMat)
+  colnames(cVifLeastSqrsMat) = colnames(VifLeastSqrsMat)
+  
+  for(i in 1:dim(x)[2])
+  {
+    special.Vars = colnames(x)[i]
+    summaryTableList = rateOfChange(x = x, y = y, noiseLevs = noiseLevs, special.Vars = special.Vars, iteration = iteration)
+    
+    VifLeastSqrsMat[,i] = summaryTableList[[4]][[3]]
+    tolLeastSqrsMat[,i] = summaryTableList[[5]][[3]]
+    wiLeastSqrsMat[,i] = summaryTableList[[6]][[3]]
+    fiLeastSqrsMat[,i] = summaryTableList[[7]][[3]]
+    leamerLeastSqrsMat[,i] = summaryTableList[[8]][[3]]
+    cVifLeastSqrsMat[,i] = summaryTableList[[9]][[3]]
+  }
+  
+  return(list(VifLeastSqrsMat, tolLeastSqrsMat, wiLeastSqrsMat, fiLeastSqrsMat, leamerLeastSqrsMat, cVifLeastSqrsMat))
+}
+################################################################################
