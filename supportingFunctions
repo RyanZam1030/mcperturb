@@ -1,0 +1,196 @@
+#########################################################################################
+regModelStats = function(xmat = c(), response = c())
+{
+  regModelStatsMat = summary(lm(response ~., data = xmat))$coefficients[2:(dim(xmat)[2]+1), 1:3]
+  return(regModelStatsMat)
+}
+#########################################################################################
+
+#########################################################################################
+randomNoiseMat = function(x_mat = c(), special_Vars = c(), noiseLevels = c())
+{
+  # Dummy matrix
+  newxmatrix = x_mat
+  # True if noise added to all variables
+  if(is.null(special_Vars))
+  { # Loop of all noise matrices
+    noiseXmatrix = as.data.frame(apply(x_mat,2,function(x)(x+rnorm(dim(x_mat)[1],mean=0,sd=(noiseLevels*sd(x))))))
+  }
+  else
+  { # Loop of selected variables noise matrices 
+    for(k in special_Vars)
+    { # Fillling in the dummy matrix
+      x_mat[,k] = x_mat[,k]+rnorm(dim(x_mat)[1],mean=0,sd=(noiseLevels*sd(x_mat[,k])))
+      newxmatrix[,k] = x_mat[,k] 
+    }
+    noiseXmatrix = newxmatrix
+  }
+  return(noiseXmatrix)
+}
+#########################################################################################
+
+#########################################################################################
+overallDiagsDiffs = function(x = x, y = y, special.Vars = special.Vars, noiseLevs = noiseLevs, iteration = iteration)
+{
+  mainLev = 1
+  summaryList = noiseLevelDiagOutList(x,y,special.Vars, noiseLevs, iteration)
+
+  origDet = summaryList[[1]][[2]][1]
+  origChiSqr = summaryList[[1]][[2]][2]
+  origRedInd = summaryList[[1]][[2]][3]
+  origSumofLam = summaryList[[1]][[2]][4]
+  origTheilInd = summaryList[[1]][[2]][5]
+  origCondNum = summaryList[[1]][[2]][6]
+  
+  detMat = matrix(data = NA, nrow = iteration, ncol = (length(summaryList)-1))
+  chiSqrMat = matrix(data = NA, nrow = iteration, ncol = (length(summaryList)-1))
+  redIndMat = matrix(data = NA, nrow = iteration, ncol = (length(summaryList)-1))
+  sumOfLamMat = matrix(data = NA, nrow = iteration, ncol = (length(summaryList)-1))
+  theilIndMat = matrix(data = NA, nrow = iteration, ncol = (length(summaryList)-1))
+  conditionMat = matrix(data = NA, nrow = iteration, ncol = (length(summaryList)-1))
+  
+  for(j in 2:length(summaryList))
+  {
+    for(i in 1:iteration)
+    {
+      detMat[i,(j-1)] = summaryList[[j]][[i]][[2]][1]
+      chiSqrMat[i,(j-1)] = summaryList[[j]][[i]][[2]][2]
+      redIndMat[i,(j-1)] = summaryList[[j]][[i]][[2]][3]
+      sumOfLamMat[i,(j-1)] = summaryList[[j]][[i]][[2]][4]
+      theilIndMat[i,(j-1)] = summaryList[[j]][[i]][[2]][5]
+      conditionMat[i,(j-1)] = summaryList[[j]][[i]][[2]][6]
+    }
+  }
+  maxDet = max(apply(detMat, 2, mean))
+  maxChi = max(apply(chiSqrMat, 2, mean))
+  maxRed = max(apply(redIndMat, 2, mean))
+  maxSum = max(apply(sumOfLamMat, 2, mean))
+  maxTheil = max(apply(theilIndMat, 2, mean))
+  maxCondition = max(apply(conditionMat, 2, mean))
+  minDet = min(apply(detMat, 2, mean))
+  minChi = min(apply(chiSqrMat, 2, mean))
+  minRed = min(apply(redIndMat, 2, mean))
+  minSum = min(apply(sumOfLamMat, 2, mean))
+  minTheil = min(apply(theilIndMat, 2, mean))
+  minCondition = min(apply(conditionMat, 2, mean))
+  
+  detDiff = mean(detMat[,mainLev]) - origDet
+  chiSqrDiff = mean(chiSqrMat[,mainLev]) - origChiSqr
+  redIndDiff = mean(redIndMat[,mainLev]) - origRedInd
+  sumOfLamDiff = mean(sumOfLamMat[,mainLev]) - origSumofLam
+  theilIndDiff = mean(theilIndMat[,mainLev]) - origTheilInd
+  conditionDiff = mean(conditionMat[,mainLev]) - origCondNum
+  
+  differences = c(detDiff, chiSqrDiff, redIndDiff, sumOfLamDiff, theilIndDiff, conditionDiff)
+  
+  differenceList = list(matrix(differences, nrow = 1, ncol = 6), detMat, chiSqrMat, redIndMat, sumOfLamMat, theilIndMat, conditionMat)
+  return(differenceList)
+}
+##########################################################################################
+
+##########################################################################################
+noiseLevelsList = function(x.mat = xmat, noise.steps = noisesteps, special.Vars = special.Var, itera = iter)
+{
+  # Initializing a list of all noise Levels
+  listAllNoiseLevels = list()
+  # Initializing a list
+  listAllNoiseLevelsNames = list()
+  
+  # Loop of different noise levels
+  for(j in 1:length(noise.steps))  
+  { # Call of Function createNoiseLevs; List of all matricies at different noise Levels
+    listAllNoiseLevels[[j]] = randomNoiseMat(x.mat, special.Vars, noise.steps)
+    listAllNoiseLevelsNames[j]  = c(paste(c(noise.steps[j]*100), "%*sd"))
+  }
+  # Returns a list of different noise levels, with multiple iterations 
+  return(structure(listAllNoiseLevels, names = listAllNoiseLevelsNames))
+}
+##########################################################################################
+
+################################################################################
+diagout = function(xmat = x, response = y, noisesteps = seq(noiseStart, noiseEnd, by = noiseSteps), special.Var = c(), iter = iteration)
+{
+  ndiagcol  = dim(xmat)[2]
+  # Model statistics
+  coeffMat = matrix(nrow =  iter, ncol = ndiagcol)
+  stderrorMat = matrix(nrow =  iter, ncol = ndiagcol)
+  tstatsMat = matrix(nrow =  iter, ncol = ndiagcol)
+  
+  # Diagnostic measures
+  vifMat = matrix(nrow =  iter, ncol = ndiagcol)
+  tolMat = matrix(nrow =  iter, ncol = ndiagcol)
+  wiMat = matrix(nrow =  iter, ncol = ndiagcol)
+  fiMat = matrix(nrow =  iter, ncol = ndiagcol)
+  leamerMat = matrix(nrow =  iter, ncol = ndiagcol)
+  cvifMat = matrix(nrow =  iter, ncol = ndiagcol)
+  kleinMat = matrix(nrow =  iter, ncol = ndiagcol)
+  
+  # Initializing the List 
+  # Model statistics
+  coeffList = list()
+  stderrorList = list()
+  tstatsList = list()
+  
+  # Diagnostic measures
+  vifList = list()
+  tolList = list()
+  wiList = list()
+  fiList = list()
+  leamerList = list()
+  cvifList = list()
+  kleinList = list()
+  
+  # Calling noiselevs function 
+  noiseresults = noiseLevelsList(xmat, noisesteps, special.Var, iter)
+  
+  # Loop through the list of noisesteps
+  for(j in 1:length(noisesteps)) 
+  {
+    # Loop through the iterations 
+    for(i in 1:iter)  
+    {
+      # Calculating the linear model 
+      regmodel = lm(response ~., data = as.data.frame(noiseresults[[j]]))
+      
+      # Filling in the model statistics 
+      coeffMat[i,] = t(regmodel$coefficients[2:(ndiagcol+1)])
+      stderrorMat[i,] = t((summary(regmodel))$coefficients[2:(ndiagcol+1),2])
+      tstatsMat[i,] = t((summary(regmodel))$coefficients[2:(ndiagcol+1),3])
+      
+      # Calculating  the Individual diagnostics measures
+      diagnostics = imcdiag(as.data.frame(noiseresults[[j]]), response)    
+      
+      # Filling in the diagnostic matrices
+      vifMat[i,] = t(diagnostics$idiags[,1])
+      tolMat[i,] = t(diagnostics$idiags[,2])
+      wiMat[i,] = t(diagnostics$idiags[,3])
+      fiMat[i,] = t(diagnostics$idiags[,4])
+      leamerMat[i,] = t(diagnostics$idiags[,5])
+      cvifMat[i,] = t(diagnostics$idiags[,6])
+      kleinMat[i,] = t(diagnostics$idiags[,7])
+    }
+    # Filling in the List of model stats at different noise steps  
+    coeffList[[j]] = as.data.frame(coeffMat)
+    stderrorList[[j]] = as.data.frame(stderrorMat)
+    tstatsList[[j]] = as.data.frame(tstatsMat)
+    
+    # Filling in the List of diagnostic measures at different noise steps  
+    vifList[[j]] = as.data.frame(vifMat)
+    tolList[[j]] = as.data.frame(tolMat)
+    wiList[[j]] = as.data.frame(wiMat)
+    fiList[[j]] = as.data.frame(fiMat)
+    leamerList[[j]] = as.data.frame(leamerMat)
+    cvifList[[j]] = as.data.frame(cvifMat)
+    kleinList[[j]] = as.data.frame(kleinMat)
+  }
+  # Making a list of all diagnostic measures 
+  diagList = list(coeffList, stderrorList, tstatsList, vifList, tolList, 
+                  wiList, fiList, leamerList, cvifList, kleinList)
+  
+  diagnames = c("coeffList", "stderrorList", "tstatsList", "vifList", "tolList", 
+                "wiList", "fiList", "leamerList", "cvifList", "kleinList")
+  
+  return(structure(diagList, names = diagnames))
+}
+################################################################################
+
