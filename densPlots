@@ -1,0 +1,18 @@
+##########################################################################################
+densPlots = function(xmat = x, meanCent = FALSE)
+{
+  if(meanCent == TRUE)
+  {
+    meancent_x = xmat
+  }
+  meancent_x = apply(xmat,2,function(x)(x-mean(x)))
+  dens_x = apply(meancent_x, 2, density)
+  plot(x=NA, 
+       xlim = range(sapply(dens_x, "[", "x")), 
+       ylim = range(sapply(dens_x, "[", "y")), 
+       ylab = "Probability")
+  mapply(lines, dens_x, col=1:length(dens_x))
+  title(main = "Density Functions for each Regressor Variable")
+  legend("topright", legend=names(dens_x), fill=1:length(dens_x))
+}
+##########################################################################################
