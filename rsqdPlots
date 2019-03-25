@@ -1,0 +1,30 @@
+#########################################################################################
+rsqdPlots = function(xmat = x, response = y, adjrsq = FALSE)
+{
+  corMat = rank(-apply(xmat, 2, function(x){cor(x,response)}))
+  new_xmat = xmat[,corMat]
+  
+  if(adjrsq==TRUE)
+  {
+    adjrsqd = summary(lm(response~new_xmat[,1]))$adj.r.squared
+    for(i in 2:dim(xmat)[2])
+    {
+      adjrsqd = c(adjrsqd, summary(lm(response~.,data=new_xmat[,1:i]))$adj.r.squared)
+    }
+    plot(adjrsqd,type="b",main = "Regression models adjusted R-squared values",
+         xlab = "Newest variable included", ylab = "Adjusted R-Squared Value",xaxt = "n")
+    axis(1, at = 1:dim(xmat)[2], labels = colnames(new_xmat))
+  }
+  else
+  {
+    rsqd = summary(lm(response~new_xmat[,1]))$r.squared
+    for(i in 2:dim(xmat)[2])
+    {
+      rsqd = c(rsqd, summary(lm(response~.,data=new_xmat[,1:i]))$r.squared)
+    }
+    plot(rsqd,type="b",main = "Regression models R-squared values",
+         xlab = "Newest variable included", ylab = "R-Squared Value",xaxt = "n")
+    axis(1, at = 1:dim(xmat)[2], labels = colnames(new_xmat))
+  }
+}
+#########################################################################################
