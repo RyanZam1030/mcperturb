@@ -1,0 +1,77 @@
+################################################################################
+BoxplotAllPerc = function(xmatrix = x, y = y, noiseLevs = noiseLevs, special.Vars = special.Vars, iteration = iteration, path = NULL)
+{
+  #summaryresults = noiseLevelDiagOutList(x = xmatrix, y = y, special.Vars = special.Vars, noiseLevels = noiseLevs, iter = iteration)
+  summaryresults = diagout(xmatrix, y, noiseLevs, special.Vars, iteration)
+  diagnames = names(summaryresults)
+  
+  summaryTableList = rateOfChange(x = x, y = y, noiseLevs = noiseLevs, special.Vars = special.Vars, iteration = iteration)
+  
+  library(mctest)
+  origdiagMat = cbind(summary(lm(y~ ., data = xmatrix))$coefficients[2:(dim(xmatrix)[2]+1),1:3], imcdiag(xmatrix,y)$idiags)
+  
+  var = list()
+  diagMat = list()
+  
+  if(is.null(path)) 
+  {
+    path = getwd()
+  }
+  newDir = "Boxplots"
+  if(file.exists(newDir))
+  {
+    setwd(file.path(path, newDir))
+  }
+  else
+  {
+    dir.create(file.path(path, newDir))
+    setwd(file.path(path, newDir))
+  }
+  noiseDir = paste(special.Vars,"noise",sep = "_")
+  if(file.exists(noiseDir))
+  {
+    setwd(file.path(path, newDir, noiseDir))
+  }
+  else
+  {
+    dir.create(file.path(path, newDir, noiseDir))
+    setwd(file.path(path, newDir, noiseDir))
+  }
+  
+  for(k in 1:dim(xmatrix)[2])
+  {# Should go k = 7 variables 
+    vpath = getwd()
+    varDir = names(xmatrix[k])
+    leastsqaures = 
+    if(file.exists(varDir))
+    {
+      setwd(file.path(vpath, varDir))
+    }
+    else
+    {
+      dir.create(file.path(vpath, varDir))
+      setwd(file.path(vpath, varDir))
+    }
+    for(j in 1:length(summaryresults))
+    {# Should go j = 10 diagnostic loops
+      for(i in 1:length(noiseLevs))
+      {# should go through a sequence of noise levels 10  
+        var[[i]] = summaryresults[[j]][[i]][k]
+      }
+      diagMat[[j]] = var
+      pdf(paste(as.character(colnames(xmatrix)[k]), diagnames[[j]],"All", special.Vars, "NoiseLevels", "pdf", sep = "."), onefile=T)
+      boxplot(as.data.frame(diagMat[[j]]), main = paste("Boxplots of", paste(colnames(xmatrix)[k]),"'s", paste(diagnames[[j]]), 
+              "noise variabe:", paste(special.Vars)), xlab = paste("Noise Levels %"), 
+              ylab = paste(as.character(colnames(xmatrix)[k]),diagnames[[j]]),  names = noiseLevs)
+      # abline(a = origdiagMat[k,j], b = summaryTableList[[j]][k,5], col = c("blue")) 
+      # abline(a = origdiagMat[k,j], b = summaryTableList[[j]][k,6], col = c("red"))
+      dev.off()
+    }
+    setwd(file.path(path, newDir, noiseDir))
+  }
+  setwd(file.path(path))
+  outputPath = paste("Your Boxplots are in ", paste(getwd()), "directory") 
+  print(outputPath)
+  return(summaryTableList)
+}
+################################################################################
