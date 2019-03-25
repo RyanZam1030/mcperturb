@@ -1,0 +1,58 @@
+################################################################################
+rateOfChange = function(x = x, y = y, noiseLevs = noiseLevs, special.Vars = special.Vars, iteration = iteration)
+{
+  summaryresultsList = diagout(x, y, noiseLevs, special.Vars, iteration)
+  origdiagMat = cbind(summary(lm(y~ ., data = x))$coefficients[2:(dim(x)[2]+1),1:3], imcdiag(x,y)$idiags)
+  noisechange = max(noiseLevs) * sd(x[,special.Vars])
+  newNoiseLevs = c(0,noiseLevs) * sd(x[,special.Vars])
+  medianMat = matrix(data = NA, nrow = length(summaryresultsList), ncol = length(noiseLevs)) 
+  medianList = list()
+  
+  for(k in 1:dim(x)[2])
+  {# Should go k = 7 variables 
+    for(j in 1:length(summaryresultsList))
+    {# Should go j = 10 diagnostic loops
+      for(i in 1:length(noiseLevs))
+      {# should go through a sequence of noise levels 10  
+        medianMat[j,i] = median(as.matrix(summaryresultsList[[j]][[i]][k]))
+      }
+    }
+    medianList[[k]] = cbind(origdiagMat[k,], medianMat)
+    medianMat = matrix(data = NA, nrow = length(summaryresultsList), ncol = length(noiseLevs)) 
+  }
+  
+  d = matrix(data = NA, nrow = length(summaryresultsList), ncol = dim(x)[2])
+  z = matrix(data = NA, nrow = length(summaryresultsList), ncol = dim(x)[2])
+  lmMat = matrix(data = NA, nrow = length(summaryresultsList), ncol = dim(x)[2])
+  summaryMat = matrix(data = NA, nrow = dim(x)[2], ncol = 4)
+  tableList = list()
+  
+  for(j in 1:length(summaryresultsList))
+  {#ix(data = NA, nrow = length(summaryresultsList), ncol = length(noiseLevs)) 
+    for(k in 1:dim(x)[2])
+    {
+       d[j,k] = max(medianList[[k]][j,])
+       z[j,k] = min(medianList[[k]][j,])
+       lmMat[j,k] = lm(medianList[[k]][j,]~newNoiseLevs)$coefficients[2]
+    }
+    maxMat = round(d, 3)
+    minMat = round(z, 3)
+    diffMat = round(d - z, 3) 
+    summaryMat[,1] = origdiagMat[,j]
+    #summaryMat[,2] = maxMat[j,]
+    #summaryMat[,3] = minMat[j,]
+    summaryMat[,2] = diffMat[j,]
+    summaryMat[,3] = lmMat[j,]
+    summaryMat[,4] = diffMat[j,] / -noisechange
+    diagdf = as.data.frame(round(summaryMat, 3)) 
+    rownames(diagdf) = colnames(x) 
+    #colnames(diagdf) = c("Original-Values", "Max-Median", "Min-Median", "Diff-Median", "Least-squares-fit", "Rate-of-Change")
+    colnames(diagdf) = c("Original-Values", "Diff-Median", "Least-squares-fit", "Rate-of-Change")
+    tableList[[j]] = diagdf
+  }
+  
+  diagna = c("Coeff Table", "Standard Error Table", "t-stats Table", "VIF Table", "TOL Table", 
+                "Wi Table", "Fi Table", "Leamer Table", "CVIF Table", "Klein Table")
+  return(structure(tableList, names = diagna))
+}
+################################################################################
