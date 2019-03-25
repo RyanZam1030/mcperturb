@@ -1,0 +1,54 @@
+#########################################################################################
+overallDiagsPlots = function(xmat = x, yvar = y, noiseLevels = noiseLevs, spec.Vars = special.Vars, iter = iteration, choice = c())
+{
+  overdiag  = overallDiagsDiffs(xmat, yvar, spec.Vars, noiseLevels, iter)
+  over = omcdiag(xmat, yvar)$odiags
+  choiceDiag = choice
+  
+  if(choiceDiag == "d")
+  {
+    boxplot(overdiag[[2]], ylim = c(min(overdiag[[2]], over[1]), max(overdiag[[2]],over[1])),
+            main = paste("g.",spec.Vars),
+            main = paste("Boxplots of the |X'X| at different noise levels \nNoise variable:", special.Vars),
+            xlab = "Noise Levels", ylab = "Determinant")
+    abline(h = over[1], lwd=4)  
+    dev.off()
+  }
+  else if(choiceDiag == "ch")
+  {
+    boxplot(overdiag[[3]], ylim = c(min(overdiag[[3]], over[2]), max(overdiag[[3]],over[2])), 
+            main = paste("Boxplots of the Farr's Chi Sqaured  at different noise levels \nNoise variable:", special.Vars), 
+            xlab = "Noise Levels", ylab = "Chi-Squred value")
+    abline(h = over[2], lwd=4)  
+  }
+  else if(choiceDiag == "r")
+  {
+    boxplot(overdiag[[4]], ylim = c(min(overdiag[[4]], over[3]), max(overdiag[[4]],over[3])),
+            main = paste("Boxplots of the Red's indicators at different noise levels \nNoise variable:", special.Vars), 
+            xlab = "Noise Levels", ylab = "Red's Indicator")
+    abline(h = over[3], lwd=4)
+    
+  }
+  else if(choiceDiag == "s")
+  {
+    boxplot(overdiag[[5]], ylim = c(min(overdiag[[5]], over[4]), max(overdiag[[5]],over[4])),
+            main = paste("Boxplots of the inverse sum of eigenvalues at different noise levels \nNoise variable:", special.Vars), 
+            xlab = "Noise Levels", ylab = "inverse sum of eigenvalues")
+    abline(h = over[4], lwd=4)
+  }
+  else if(choiceDiag == "t")
+  {
+    boxplot(overdiag[[6]], ylim = c(min(overdiag[[6]], over[5]), max(overdiag[[6]],over[5])),
+            main = paste("Boxplots of the Theil's indicators at different noise levels \nNoise variable:", special.Vars), 
+            xlab = "Noise Levels", ylab = "Theil's Indicator")
+    abline(h = over[5], lwd=4)
+  }
+  else if(choiceDiag == "co")
+  {
+    boxplot(overdiag[[7]], ylim = c(min(overdiag[[7]], over[6]), max(overdiag[[7]],over[6])),
+            main = paste("Boxplots of the condition number at different noise levels \nNoise variable:", special.Vars), 
+            xlab = "Noise Levels", ylab = "Condition number")
+    abline(h = over[6], lwd=4) 
+  }
+}
+#########################################################################################
