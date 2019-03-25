@@ -1,0 +1,15 @@
+##########################################################################################
+implausStats = function(xmat = x, response = y)
+{
+  indCorr = apply(xmat,2,function(x)(cor(x,response)))
+  indivStats = apply(xmat,2,function(x)(summary(lm(response~x))))
+  indivCoeffs = lapply(indivStats,function(x)(coef(x)[2]))
+  indivStd.errs = lapply(indivStats,function(x)(coefficients(x)[2,2]))
+  allVarsStats = summary(lm(response~.,data=xmat))$coefficients  
+  estimates = allVarsStats[2:(dim(xmat)+1)[2],1]
+  std.errors = allVarsStats[2:(dim(xmat)+1)[2],2]
+  summaryTable = cbind(indCorr, indivCoeffs, estimates, indivStd.errs, std.errors)
+  colnames(summaryTable) = c("Corr w/ Resp ", "SLR Coeff", "MLR Coeff", "SLR Std.err", "MLR Std.err" ) 
+  return(summaryTable)
+}
+##########################################################################################
