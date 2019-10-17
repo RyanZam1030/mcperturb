@@ -12,5 +12,4 @@ How to cite us
 Contact us
 Shuying Sun (ssun5211@yahoo.com) and Ryan Zamora (rz1030@yahoo.com)
 
-Access to the published manuscripts
-  In process
+Access to the published manuscripts is in progress
