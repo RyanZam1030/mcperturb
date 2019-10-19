@@ -78,7 +78,6 @@ implausStats(xmat = x, response = y)
 rsqdPlots(x,y)
 rsqdPlots(x,y,T)
 
-
 ##########################################################################################
 ######################### Calling Overall Diagnostics plots
 ##########################################################################################
@@ -91,7 +90,6 @@ for (i in 1:dim(x)[2])
   overallDiagsPlots(xmat = x, yvar = y, noiseLevels = noiseLevs, 
                     spec.Vars = special.Vars, iter = iteration, choice =  c("d"))
 }
-
 
 ##########################################################################################
 ######################### Calling Boxplots all percentage function
@@ -113,35 +111,38 @@ boxplotout = boxplotsAllVars(xmatrix = x, y = y, noiseLevs = noiseLevs,
 
 overallDiagsOut(x = x, y = y, noiseLevs = noiseLevs, iteration = iteration)
 
-################################################################################
+##########################################################################################
 ######################### Calling rateOfChange 
-################################################################################
+##########################################################################################
 
-summaryTableList = rateOfChange(x = x, y = y, noiseLevs = noiseLevs, special.Vars = special.Vars, iteration = iteration)
+summaryTableList = rateOfChange(x = x, y = y, noiseLevs = noiseLevs, 
+                                special.Vars = special.Vars, iteration = iteration)
 
-################################################################################
+##########################################################################################
 ######################### Calling overallDiagsRank 
-################################################################################
+##########################################################################################
 
 Ranks = overallDiagsRank(xmat = x, resp = y, noiseL = noiseLevs, itera = iteration)
 
-################################################################################
+##########################################################################################
 ######################### Calling isBestfit 
-################################################################################
+##########################################################################################
 
-bestfitvalues = isBestFit(x = x, y = y, noiseLevs = noiseLevs, special.Vars = special.Vars, iteration = iteration)
+bestfitvalues = isBestFit(x = x, y = y, noiseLevs = noiseLevs, 
+                          special.Vars = special.Vars, iteration = iteration)
 vifBestFit = bestfitvalues[[1]]
 
-################################################################################
+##########################################################################################
 ######################### Calling isRateofChange
-################################################################################
+##########################################################################################
 
-rateofchangevalues = isRateofChange(x = x, y = y, noiseLevs = noiseLevs, special.Vars = special.Vars, iteration = iteration)
+rateofchangevalues = isRateofChange(x = x, y = y, noiseLevs = noiseLevs, 
+                                    special.Vars = special.Vars, iteration = iteration)
 vifRateofChange = rateofchangevalues[[1]]
 
-################################################################################
+##########################################################################################
 ######################### Calling isBestFit, isRateofChange
-################################################################################
+##########################################################################################
 
 fullx = body_dat[,c(1:22,24)]
 colnames(fullx) = c("bicromial", "biiliac", "bitrochanteric", "chestDepth",
